@@ -9,45 +9,50 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/ai", async (req, res) => {
-    try {
-        const userText = req.body.text;
+  try {
+    const userText = req.body.text;
 
-        if (!userText) {
-            return res.status(400).json({ error: "No input text" });
-        }
-
-        const response = await fetch("https://api.openai.com/v1/responses", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "gpt-4.1-mini",
-                input: userText
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error("OpenAI error:", data);
-            return res.status(500).json({ error: "OpenAI API error", details: data });
-        }
-
-        const reply =
-            data.output_text ||
-            data.output?.[0]?.content?.[0]?.text ||
-            "No response";
-
-        res.json({ reply });
-
-    } catch (err) {
-        console.error("Server error:", err);
-        res.status(500).json({ error: "Server crashed" });
+    if (!userText) {
+      return res.status(400).json({ error: "No input text" });
     }
+
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        input: userText,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("OpenAI error:", data);
+      return res.status(500).json({
+        error: "OpenAI API error",
+        details: data,
+      });
+    }
+
+    const reply =
+      data.output_text ||
+      data.output?.[0]?.content?.[0]?.text ||
+      "No response";
+
+    res.json({ reply });
+  } catch (err) {
+    console.error("Server error:", err);
+    res.status(500).json({ error: "Server crashed" });
+  }
 });
 
-app.listen(3000, () => {
-    console.log("✅ Server running at http://localhost:3000");
+/* 🔴 IMPORTANT PART FOR RENDER 🔴 */
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
 });
